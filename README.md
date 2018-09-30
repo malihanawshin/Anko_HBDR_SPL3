@@ -1,0 +1,3 @@
+# Anko_HBDR_SPL3
+Anko (অঙ্ক) is being developed as a Bengali handwritten digit as well as number recognizing Android app.
+This Android app will be developed as a tool for recognizing Bengali handwritten digit. It will let users take photo of any handwritten Bangla number. The number might be consisted of one or more digits. For example, it can be a phone number written in Bangla. Data of photo will be uploaded to the server for further processing. A dataset of handwritten digit from Bengali.ai website will be used for training purpose. Dataset will be trained using the algorithm which can give the best accuracy. Captured image will be matched with the trained dataset and the result will be shown in both English digits and words in the app. 
