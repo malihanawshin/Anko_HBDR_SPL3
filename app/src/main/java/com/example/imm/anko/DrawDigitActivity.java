@@ -12,6 +12,15 @@ public class DrawDigitActivity extends AppCompatActivity {
     protected DrawView drawview;
     protected ImageView canvas;
 
+    private static final int width = 32;
+    private static final int height = 32;
+    private static final String model_file = "file:///android_asset/opt_bangla_digit_convnet_v2.pb";
+    private static final String label_file = "file:///android_asset/labels.txt";
+    private static final int input_size = 32;
+    private static final String input_name = "conv2d_1_input";
+    private static final String output_name = "activation_2/Softmax";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,8 +31,9 @@ public class DrawDigitActivity extends AppCompatActivity {
 
         findViewById(R.id.recognizeButton).setOnClickListener(clickListener);
         findViewById(R.id.resetButton).setOnClickListener(clickListener);
-    }
 
+        load();
+    }
 
     protected View.OnClickListener clickListener = new View.OnClickListener() {
         @Override
@@ -45,12 +55,13 @@ public class DrawDigitActivity extends AppCompatActivity {
         Bitmap original = drawview.getBitmap();
         Bitmap scaled = Bitmap.createScaledBitmap(original, 32, 32, false);
         canvas.setImageBitmap(scaled);
-        switchPreviewVisibility();
+        changeVisibility();
+
 
 
     }
 
-    private void switchPreviewVisibility() {
+    private void changeVisibility() {
         canvas.setVisibility(View.VISIBLE);
         drawview.setVisibility(View.GONE);
     }
@@ -61,5 +72,11 @@ public class DrawDigitActivity extends AppCompatActivity {
         canvas.setVisibility(View.GONE);
         drawview.setVisibility(View.VISIBLE);
     }
+
+    private void load() {
+
+
+    }
+
 
 }
