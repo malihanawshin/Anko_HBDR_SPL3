@@ -6,6 +6,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 
 public class DrawDigitActivity extends AppCompatActivity {
 
@@ -14,12 +17,14 @@ public class DrawDigitActivity extends AppCompatActivity {
 
     private static final int width = 32;
     private static final int height = 32;
-    private static final String model_file = "file:///android_asset/opt_bangla_digit_convnet_v2.pb";
-    private static final String label_file = "file:///android_asset/labels.txt";
+    private static final String model_path = "file:///android_asset/opt_bangla_digit_convnet_v2.pb";
+    private static final String label_path = "file:///android_asset/labels.txt";
     private static final int input_size = 32;
     private static final String input_name = "conv2d_1_input";
     private static final String output_name = "activation_2/Softmax";
 
+    private Executor executor = Executors.newSingleThreadExecutor();
+    private DigitClassifier classifier;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +80,14 @@ public class DrawDigitActivity extends AppCompatActivity {
 
     private void load() {
 
-
+        executor.execute(() -> {
+            try {
+                classifier = DigitClassifier.create(getApplicationContext().getAssets(),
+                        model_path, label_path, input_size, input_name, output_name);
+            } catch (final Exception e) {
+                throw new RuntimeException("Error while initializing TensorFlow!", e);
+            }
+        });
     }
 
 
