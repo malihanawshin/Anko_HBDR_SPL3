@@ -20,7 +20,7 @@ public class DrawView extends View {
     private Canvas canvas;
 
     private float X, Y;
-    private static final float TOUCH_TOLERANCE = 5;
+    private static final float touch_tolerance = 5;
 
     public DrawView(Context context, AttributeSet set) {
         super(context,set);
@@ -34,7 +34,7 @@ public class DrawView extends View {
         Paint paint = new Paint();
         paint.setAntiAlias(true);
         paint.setDither(true);
-        paint.setColor(Color.YELLOW);
+        paint.setColor(Color.BLACK);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeCap(Paint.Cap.SQUARE);
         paint.setStrokeJoin(Paint.Join.BEVEL);
@@ -79,7 +79,7 @@ public class DrawView extends View {
     private void touchMove(float x, float y) {
         float fx = Math.abs(x - X);
         float fy = Math.abs(y - Y);
-        if (fx >= TOUCH_TOLERANCE || fy >= TOUCH_TOLERANCE) {
+        if (fx >= touch_tolerance || fy >= touch_tolerance) {
             path.quadTo(X, Y, (x + X) / 2, (y + Y) / 2);
             X = x;
             Y = y;

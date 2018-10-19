@@ -1,6 +1,7 @@
 package com.example.imm.anko;
 
 import android.content.res.AssetManager;
+import android.util.Log;
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 
@@ -22,12 +23,13 @@ public class DigitClassifier {
     private static final int total_classes = 10;
     private TensorFlowInferenceInterface tf;
 
+    private static final String TAG = "all classes";
+    private static final float threshold = 0.2f;
 
     public static DigitClassifier create(AssetManager assets, String model_path, String label_path, int input_size, String input_name, String output_name) throws IOException {
 
         DigitClassifier digitClassifier = new DigitClassifier();
         String label_file = label_path.split("file:///android_asset/")[1];
-
 
         digitClassifier.input_name = input_name;
         digitClassifier.output_name = output_name;
@@ -55,6 +57,24 @@ public class DigitClassifier {
         return labels;
     }
 
+
+    public DigitClassification recognize(float[] pixels){
+
+        tf.feed(input_name, pixels, 1, input_size, input_size, 1);
+        tf.run(output_names);
+        tf.fetch(output_name,output);
+
+        DigitClassification digit = new DigitClassification();
+
+        for(int i=0;i<output.length;i++){
+            Log.d(TAG, String.format("Class: %s Confidence: %f", labels.get(i), output[i]));
+            if (output[i] > threshold && output[i] > digit.getConfidence()) {
+                digit.update(labels.get(i),output[i]);
+            }
+        }
+
+        return digit;
+    }
 
 
 

@@ -5,9 +5,7 @@ public class DigitClassification {
     private String label;
     private float confidence;
 
-    public DigitClassification(String label,float confidence) {
-        update(label,confidence);
-    }
+    //public DigitClassification(String label,float confidence) {update(label,confidence);}
 
     public DigitClassification() {
         this.label = null;

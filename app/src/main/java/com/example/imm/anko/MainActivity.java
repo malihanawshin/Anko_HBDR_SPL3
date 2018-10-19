@@ -18,8 +18,8 @@ public class MainActivity extends AppCompatActivity {
     protected LinearLayout drawDigit;
     protected LinearLayout choosePhoto;
 
-    static final int REQUEST_IMAGE_CAPTURE = 1;
-    static final int SELECT_IMAGE = 1;
+    static final int request_image_capture = 1;
+    static final int select_image = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,34 +33,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    protected View.OnClickListener clickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
+    protected View.OnClickListener clickListener = v -> {
 
-            switch (v.getId()) {
-                case R.id.take_photo:
-                    takePhoto();
-                    break;
+        switch (v.getId()) {
+            case R.id.take_photo:
+                takePhoto();
+                break;
 
-                case R.id.draw_digit:
-                    drawDigit();
-                    break;
+            case R.id.draw_digit:
+                drawDigit();
+                break;
 
-                case R.id.choose_photo:
-                    choosePhoto();
-                    break;
+            case R.id.choose_photo:
+                choosePhoto();
+                break;
 
 
-            }
         }
     };
 
     protected void takePhoto(){
 
         dispatchTakePictureIntent();
-        //startActivity(new Intent(BottomBarActivity.this,SettingsActivity.class));
-        //finish();
-
     }
 
     protected void drawDigit(){
@@ -72,20 +66,20 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Photo"),SELECT_IMAGE);
+        startActivityForResult(Intent.createChooser(intent, "Select Photo"),select_image);
     }
 
 
     private void dispatchTakePictureIntent(){
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            startActivityForResult(takePictureIntent,request_image_capture);
         }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == SELECT_IMAGE) {
+        if (requestCode == select_image) {
             if (resultCode == Activity.RESULT_OK) {
                 if (data != null) {
                     try {
@@ -99,15 +93,4 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-    /*@Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            mImageView.setImageBitmap(imageBitmap);
-        }
-    }
-*/
-
 }
