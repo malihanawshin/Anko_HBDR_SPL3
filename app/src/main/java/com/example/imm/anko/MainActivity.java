@@ -2,15 +2,13 @@ package com.example.imm.anko;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
-import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -82,15 +80,18 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == select_image) {
             if (resultCode == Activity.RESULT_OK) {
                 if (data != null) {
-                    try {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(),data.getData());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    detectFromImage(data.getData());
                 }
             } else if (resultCode == Activity.RESULT_CANCELED)  {
                 Toast.makeText(getApplicationContext(), "Cancelled", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void detectFromImage(Uri uri) {
+
+        Intent intent = new Intent(MainActivity.this,DetectFromImageActivity.class);
+        intent.putExtra("URI",uri);
+        startActivity(intent);
     }
 }

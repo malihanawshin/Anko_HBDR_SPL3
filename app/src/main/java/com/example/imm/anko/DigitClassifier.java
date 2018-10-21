@@ -24,7 +24,7 @@ public class DigitClassifier {
     private TensorFlowInferenceInterface tf;
 
     private static final String TAG = "all classes";
-    private static final float threshold = 0.2f;
+    private static final float threshold = 0.1f;
 
     public static DigitClassifier create(AssetManager assets, String model_path, String label_path, int input_size, String input_name, String output_name) throws IOException {
 
