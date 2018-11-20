@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".DrawDigitActivity"></activity>
-        <activity android:name=".DetectFromImageActivity"></activity>
+        <activity android:name=".DetectFromImageActivity" android:exported="true"></activity>
     </application>
 
 </manifest>

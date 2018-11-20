@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+
 public class MainActivity extends AppCompatActivity {
 
     protected LinearLayout takePhoto;
@@ -57,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
 
     protected void drawDigit(){
         startActivity(new Intent(MainActivity.this,DrawDigitActivity.class));
-        //finish();
     }
 
     protected void choosePhoto(){
@@ -89,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void detectFromImage(Uri uri) {
-
         Intent intent = new Intent(MainActivity.this,DetectFromImageActivity.class);
         intent.putExtra("URI",uri);
         startActivity(intent);
