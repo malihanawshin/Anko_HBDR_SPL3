@@ -35,7 +35,7 @@ public class ConvertColor {
         int width = b.getWidth();
         int height = b.getHeight();
         int pixel, A, R , G, B;
-        Bitmap bmOut = Bitmap.createScaledBitmap(b, 32, 32, false);;
+        Bitmap bmOut = Bitmap.createScaledBitmap(b, width, height, false);;
 
         for (int x = 0; x < width; ++x) {
             for (int y = 0; y < height; ++y) {

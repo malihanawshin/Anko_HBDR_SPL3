@@ -7,6 +7,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -26,6 +30,8 @@ public class DrawDigitActivity extends AppCompatActivity {
 
     private Executor executor = Executors.newSingleThreadExecutor();
     private DigitClassifier digitClassifier;
+    private ImageProcessor ip = new ImageProcessor();
+    Bitmap originalImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +45,12 @@ public class DrawDigitActivity extends AppCompatActivity {
         findViewById(R.id.resetButton).setOnClickListener(clickListener);
 
         load();
+        if(OpenCVLoader.initDebug()){
+            Toast.makeText(getApplicationContext(), "Loaded", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Toast.makeText(getApplicationContext(), "Cancelled", Toast.LENGTH_SHORT).show();
+        }
     }
 
     protected View.OnClickListener clickListener = new View.OnClickListener() {
@@ -56,12 +68,20 @@ public class DrawDigitActivity extends AppCompatActivity {
         }
     };
 
+
     private void onRecognize() {
 
-        Bitmap originalImage = drawview.getBitmap();
+        originalImage = drawview.getBitmap();
+
         Bitmap scaledImage = Bitmap.createScaledBitmap(originalImage, 32, 32, false);
+
+        Mat imgMat = ip.preProcessImage(scaledImage);
+        Utils.matToBitmap(imgMat,scaledImage);
+
         canvas.setImageBitmap(scaledImage);
-        changeVisibility();
+        //changeVisibility();
+
+        Mat boundImage = ip.segmentAndRecognize(imgMat,scaledImage);
 
         int pixels[] = new int[height*width];
         scaledImage.getPixels(pixels,0,height, 0,0,width,height);
@@ -72,13 +92,15 @@ public class DrawDigitActivity extends AppCompatActivity {
         canvas.setImageBitmap(preview);
 
         classify(normalizedPixels);
-
     }
 
     private void classify(float[] normalizedPixels) {
         DigitClassification dc = digitClassifier.recognize(normalizedPixels);
-        String result = String.format("Digit %s with confidence: %f",dc.getLabel(),dc.getConfidence());
-        Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
+        NumberToWord nw = new NumberToWord();
+        int number = Integer.parseInt(dc.getLabel());
+        String num = nw.numberToWords(number);
+        String result = String.format("Digit: %s, %s",dc.getLabel(),num);
+        Toast.makeText(this, result, Toast.LENGTH_LONG).show();
     }
 
     private void changeVisibility() {
@@ -105,7 +127,7 @@ public class DrawDigitActivity extends AppCompatActivity {
         });
     }
 
-    private float[] normalizePixels(int[] pixels){
+    public static float[] normalizePixels(int[] pixels){
         float[] normalizedPixels = ConvertColor.convertForTensorflow(pixels);
         return normalizedPixels;
     }
