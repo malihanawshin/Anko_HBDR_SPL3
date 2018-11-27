@@ -75,13 +75,13 @@ public class DrawDigitActivity extends AppCompatActivity {
 
         Bitmap scaledImage = Bitmap.createScaledBitmap(originalImage, 32, 32, false);
 
-        Mat imgMat = ip.preProcessImage(scaledImage);
-        Utils.matToBitmap(imgMat,scaledImage);
+        //Mat imgMat = ip.preProcessImage(scaledImage);
+        //Utils.matToBitmap(imgMat,scaledImage);
 
         canvas.setImageBitmap(scaledImage);
-        //changeVisibility();
+        changeVisibility();
 
-        Mat boundImage = ip.segmentAndRecognize(imgMat,scaledImage);
+        //Mat boundImage = ip.segmentAndRecognize(imgMat,scaledImage);
 
         int pixels[] = new int[height*width];
         scaledImage.getPixels(pixels,0,height, 0,0,width,height);
