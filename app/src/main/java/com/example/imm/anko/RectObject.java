@@ -3,19 +3,19 @@ package com.example.imm.anko;
 import android.graphics.Bitmap;
 
     public class RectObject implements Comparable<RectObject> {
-        int xCord;
-        Bitmap bmp;
+        int xCoordinate;
+        Bitmap bitmap;
 
-        public RectObject(int xCord, Bitmap bmp) {
-            this.xCord = xCord;
-            this.bmp = bmp;
+        public RectObject(int xCoordinate, Bitmap bitmap) {
+            this.xCoordinate = xCoordinate;
+            this.bitmap = bitmap;
         }
 
-        public int compareTo(RectObject roi) {
-            if(this.xCord < roi.xCord) {
+        public int compareTo(RectObject ro) {
+            if(this.xCoordinate < ro.xCoordinate) {
                 return -1;
             }
-            else if(this.xCord > roi.xCord) {
+            else if(this.xCoordinate > ro.xCoordinate) {
                 return 1;
             }
             else {

@@ -2,40 +2,37 @@ package com.example.imm.anko;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+import java.util.ArrayList;
+import java.util.Collections;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfDouble;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
-import java.util.ArrayList;
-import java.util.Collections;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 
 public class ImageProcessor {
 
-    //IOUtils mIOUtils = new IOUtils();
-    private static final String TAG = "ImageProcessor";
-    ArrayList<RectObject> mRoiImages = new ArrayList<RectObject>(50);
-    //StringBuilder mResultDigits;
-    String mResultText;
-    NumberToWord mNumConverter = new NumberToWord();
-    DigitClassifier digitClassifier;
+    public String resultText;
+    public String resultNum;
 
-    // Amplify the region of interest by making the number bright and
-    // background black. This removes noise due to shadows / insufficient lighting.
+    private static final String TAG = "ImageProcessor";
+    ArrayList<RectObject> rectImages = new ArrayList<RectObject>(50);
+    public NumberToWord numConverter = new NumberToWord();
+    private ImageUtils io = new ImageUtils();
+
     public Mat preProcessImage(Bitmap image) {
-        Size sz = new Size(640, 480);
+        Size sz = new Size(320, 240);
         ArrayList<Rect> rects;
         Rect rect;
         int top,bottom,left,right;
-        Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
-        //Bitmap imageToDisplay = Bitmap.createBitmap(640,480,conf);
+
         Mat origImageMatrix = new Mat(image.getWidth(), image.getHeight(), CvType.CV_8UC3);
         Mat tempImageMat = new Mat(image.getWidth(),image.getHeight(),CvType.CV_8UC1,new Scalar(0));
         Utils.bitmapToMat(image,origImageMatrix);
@@ -44,19 +41,15 @@ public class ImageProcessor {
         Mat imgToProcessCanny = new Mat (image.getWidth(), image.getHeight(), CvType.CV_8UC1);
         Utils.bitmapToMat(image,imgToProcess);
 
-        //Resize image to manageable size
         Imgproc.resize(imgToProcess, imgToProcess, sz,0,0,Imgproc.INTER_NEAREST);
         Imgproc.resize(origImageMatrix, origImageMatrix, sz,0,0,Imgproc.INTER_NEAREST);
         Imgproc.resize(tempImageMat, tempImageMat, sz,0,0,Imgproc.INTER_NEAREST);
         Imgproc.cvtColor(imgToProcess, imgToProcess, Imgproc.COLOR_BGR2GRAY);
 
-        //Remove noise using Gaussian filter http://docs.opencv.org/2.4/doc/tutorials/imgproc/gausian_median_blur_bilateral_filter/gausian_median_blur_bilateral_filter.html
-
         Imgproc.GaussianBlur(imgToProcess,imgToProcess,new Size(3,3),0);
 
         Mat imgGrayInv = new Mat(sz,CvType.CV_8UC1,new Scalar(255.0));
 
-        //Invert the brightness - make lighter pixel dark and vice versa.
         Core.subtract(imgGrayInv,imgToProcess,imgGrayInv);
         Imgproc.Canny(imgToProcess,imgToProcessCanny,13,39,3,false);
 
@@ -88,8 +81,7 @@ public class ImageProcessor {
             Mat aux = tempImageMat.colRange(left, right).rowRange(top, bottom);
             MatOfDouble matMean = new MatOfDouble();
             MatOfDouble matStd = new MatOfDouble();
-            Double mean;
-            Double std;
+            Double mean, std;
             Mat roiImage = imgGrayInv.submat(top, bottom, left, right).clone();
             Core.meanStdDev(roiImage, matMean, matStd);
             mean = matMean.toArray()[0];
@@ -107,7 +99,7 @@ public class ImageProcessor {
         ArrayList<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         ArrayList<Rect> rects = new ArrayList<>(50);
         Mat hierarchy = new Mat();
-        Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf type
+
         Imgproc.findContours(imgToProcess, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
 
         for (int contourIdx = 0; contourIdx < contours.size(); contourIdx++) {
@@ -116,36 +108,34 @@ public class ImageProcessor {
 
             MatOfPoint2f approxCurve = new MatOfPoint2f();
             MatOfPoint2f contour2f = new MatOfPoint2f(contours.get(contourIdx).toArray());
-            //Processing on mMOP2f1 which is in type MatOfPoint2f
+            // processing on mMOP2f1 which is in type MatOfPoint2f
             double approxDistance = Imgproc.arcLength(contour2f, true) * 0.02;
             Imgproc.approxPolyDP(contour2f, approxCurve, approxDistance, true);
 
-            //Convert back to MatOfPoint
+            // convert back to MatOfPoint
             MatOfPoint points = new MatOfPoint(approxCurve.toArray());
 
-            // Get bounding rect of contour
+            // get bounding rect of contour
             Rect rect = Imgproc.boundingRect(points);
-            Log.d(TAG, "Rect Height :" + rect.height);
-            //Log.d(TAG, "Rect Width :" + rect.width);
+
             if (rect.height > 5) {
                 rects.add(rect);
             }
 
-
         }
-        filterRectangles(rects);
+        rectangles(rects);
         return rects;
     }
 
 
 
-    public Mat segmentAndRecognize(Mat imgToProcess,Bitmap origImage) {
+    public Mat segmentAndRecognize(Mat imgToProcess,Bitmap origImage, DigitClassifier digitClassifier) {
         StringBuilder ResultDigits  = new StringBuilder("");
-        mRoiImages.clear();
+        rectImages.clear();
         ArrayList<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         Mat hierarchy = new Mat();
         Mat origImageMatrix = new Mat(origImage.getWidth(), origImage.getHeight(), CvType.CV_8UC3);
-        Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
+        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
         Mat roiImage;
         Utils.bitmapToMat(origImage, origImageMatrix);
         Imgproc.findContours(imgToProcess, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
@@ -154,98 +144,89 @@ public class ImageProcessor {
 
             double contourArea = Imgproc.contourArea(contours.get(contourIdx));
 
-            //In case of white board / surface having a lot of small dark spots
-            // Use this to filter out very small spots.
-            //if (contourArea < 500.0) {
-            //    continue;
-            //}
-            Log.d(TAG,"CountourAra = " + contourArea);
+            // using this to filter out very small spots
+            if (contourArea < 500.0) {
+                continue;
+            }
+            Log.d(TAG,"Contour Area = " + contourArea);
 
             MatOfPoint2f approxCurve = new MatOfPoint2f();
             MatOfPoint2f contour2f = new MatOfPoint2f(contours.get(contourIdx).toArray());
 
-            //Processing on mMOP2f1 which is in type MatOfPoint2f
+            // processing on mMOP2f1 which is in type MatOfPoint2f
             double approxDistance = Imgproc.arcLength(contour2f, true) * 0.02;
             Imgproc.approxPolyDP(contour2f, approxCurve, approxDistance, true);
 
-            //Convert back to MatOfPoint
+            // convert back to MatOfPoint
             MatOfPoint points = new MatOfPoint(approxCurve.toArray());
 
-            // Get bounding rect of contour
+            // get bounding rect of contour
             Rect rect = Imgproc.boundingRect(points);
             Imgproc.rectangle(origImageMatrix, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0, 255), 3);
             if ((rect.y + rect.height > origImageMatrix.rows()) || (rect.x + rect.width > origImageMatrix.cols())) {
                 continue;
             }
 
-
             MatOfDouble matMean = new MatOfDouble();
             MatOfDouble matStd = new MatOfDouble();
             Double mean;
-            Double std;
 
             roiImage = imgToProcess.submat(rect.y,rect.y + rect.height ,rect.x,rect.x + rect.width );
             int xCord = rect.x;
             Core.copyMakeBorder(roiImage, roiImage, 100, 100, 100, 100, Core.BORDER_ISOLATED);
 
-            Mat resizeimage = new Mat();
-            Size sz = new Size(28, 28);
+            Size sz = new Size(32, 32);
             Imgproc.resize(roiImage, roiImage, sz);
-
 
             Core.meanStdDev(roiImage, matMean, matStd);
             mean = matMean.toArray()[0];
-            std = matStd.toArray()[0];
 
             Imgproc.threshold(roiImage, roiImage, mean, 255, Imgproc.THRESH_BINARY_INV);
             Bitmap tempImage = Bitmap.createBitmap(roiImage.cols(), roiImage.rows(), conf);
             Utils.matToBitmap(roiImage, tempImage);
-            RectObject roiObject = new RectObject(xCord,tempImage);
-            mRoiImages.add(roiObject);
+            Bitmap scaledImage = Bitmap.createScaledBitmap(tempImage, 32, 32, false);
+            RectObject roiObject = new RectObject(xCord,scaledImage);
+            rectImages.add(roiObject);
 
-            //Uncomment only for debugging
-            //mIOUtils.saveImage(tempImage,"roi.jpg");
+            io.saveImage(tempImage,"singleImage.jpg");
         }
 
+        Collections.sort(rectImages);
 
-        // To read the digits from left to right - sort as per the X coordinates.
-        Collections.sort(mRoiImages);
-
-        //Set the max number of digits to read to 9 (arbitrarily chosen)
-        int max = (mRoiImages.size() > 9) ? 9 : mRoiImages.size();
+        int max = (rectImages.size() > 9) ? 9 : rectImages.size();
         for (int i = 0; i < max; i++) {
-            RectObject roi = mRoiImages.get(i);
-            int [] pixels = getPixelData(roi.bmp);
+            RectObject roi = rectImages.get(i);
+            int [] pixels = getPixelData(roi.bitmap);
 
-            //int digit = digitDetector.detectDigit(pixels);
-            float[] normalizedPixels = DrawDigitActivity.normalizePixels(pixels);
-
-            DigitClassification dc = digitClassifier.recognize(normalizedPixels);
+            float[] pixelsInFloat = makeFloat(pixels);
+            DigitClassification dc = digitClassifier.recognize(pixelsInFloat);
             int digit = Integer.parseInt(dc.getLabel());
 
-            Log.i(TAG, "digit =" + digit);
+            Log.i(TAG, "digit = " + digit);
             ResultDigits.append("" + digit);
         }
 
-        int number = Integer.parseInt(ResultDigits.toString());
-        Log.i(TAG,"Number = :" + number);
-        mResultText = mNumConverter.numberToWords(number);
-
+        resultNum = ResultDigits.toString();
+        int number = Integer.parseInt(resultNum);
+        Log.i(TAG,"Number = " + number);
+        
+        resultText = numConverter.numberToWords(number);
         return origImageMatrix;
     }
 
     public String getResultText() {
-        return this.mResultText;
+        return this.resultText;
     }
+    
+    public String getResultNum() { return this.resultNum; }
 
-    // Converting the bitmap into pixel array which is sent to the detector (Native code).
     private int [] getPixelData(Bitmap tempImage) {
         Log.d(TAG,"Image Size : " + tempImage.getWidth() + " , " + tempImage.getHeight());
         int [] pixels = new int[tempImage.getWidth() * tempImage.getHeight()];
         tempImage.getPixels(pixels, 0, tempImage.getWidth(), 0, 0, tempImage.getWidth(),tempImage.getHeight());
         int[] retPixels = new int[pixels.length];
         for (int i = 0; i < pixels.length; ++i) {
-            // Set 0 for white and 255 for black pixel
+            // set 0 for white and 255 for black pixel
             int pix = pixels[i];
             pix = pix & 0xff;
             int b = pix & 0xff;
@@ -255,7 +236,7 @@ public class ImageProcessor {
 
     }
 
-    private ArrayList<Rect> filterRectangles(ArrayList<Rect> rects) {
+    private ArrayList<Rect> rectangles(ArrayList<Rect> rects) {
         double sum = 0.0;
         double mean = 0.0;
         for (int i = 0; i < rects.size(); i++) {
@@ -273,4 +254,15 @@ public class ImageProcessor {
         }
         return rects;
     }
+
+    public static float[] makeFloat(int[] pixels){
+
+        float[] floatArray = new float[pixels.length];
+        for(int i=0;i<pixels.length;i++){
+             floatArray[i] = (float) pixels[i];
+        }
+
+        return floatArray;
+    }
+
 }

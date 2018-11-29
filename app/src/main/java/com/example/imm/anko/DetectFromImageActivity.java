@@ -33,6 +33,7 @@ public class DetectFromImageActivity extends AppCompatActivity {
 
     protected ImageView image;
     protected Bitmap bitmap;
+/*
     private static final int width = 32;
     private static final int height = 32;
     private static final String model_path = "file:///android_asset/opt_bangla_digit_convnet_v2.pb";
@@ -43,13 +44,9 @@ public class DetectFromImageActivity extends AppCompatActivity {
 
     private Executor executor = Executors.newSingleThreadExecutor();
     private DigitClassifier digitClassifier;
+*/
     private Uri uri;
-
-    /*static {
-        System.loadLibrary("libopencv_core");
-        System.loadLibrary("liblibopencv_core");
-        System.loadLibrary("libjniopencv_core");
-    }*/
+    public ImageProcessor ip = new ImageProcessor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,9 +65,15 @@ public class DetectFromImageActivity extends AppCompatActivity {
 
         image.setImageBitmap(bitmap);
 
-        findViewById(R.id.recognizeButton).setOnClickListener(clickListener);
-        findViewById(R.id.resetButton).setOnClickListener(clickListener);
+        //findViewById(R.id.recognizeButton).setOnClickListener(clickListener);
+        //findViewById(R.id.resetButton).setOnClickListener(clickListener);
 
+        findViewById(R.id.recognizeButton).setVisibility(View.INVISIBLE);
+        findViewById(R.id.resetButton).setVisibility(View.INVISIBLE);
+
+
+
+/*
         if(OpenCVLoader.initDebug()){
             Toast.makeText(getApplicationContext(), "Loaded", Toast.LENGTH_SHORT).show();
         }
@@ -79,6 +82,7 @@ public class DetectFromImageActivity extends AppCompatActivity {
         }
 
         load();
+*/
     }
 
 
@@ -88,16 +92,17 @@ public class DetectFromImageActivity extends AppCompatActivity {
 
             switch (v.getId()) {
                 case R.id.recognizeButton:
-                    onRecognize();
+                    //onRecognize();
                     break;
                 case R.id.resetButton:
-                    onReset();
+                    //onReset();
                     break;
             }
         }
     };
 
 
+/*
     private void onRecognize() {
 
         //bitmap = convertToGray(bitmap);
@@ -119,7 +124,9 @@ public class DetectFromImageActivity extends AppCompatActivity {
 
         classify(normalizedPixels);
     }
+*/
 
+/*
     private Bitmap convertToGray(Bitmap bitmap) {
 
         //opencv_core.IplImage image = cvLoadImage(uri.getPath(),0);
@@ -164,13 +171,15 @@ public class DetectFromImageActivity extends AppCompatActivity {
         Utils.bitmapToMat(grayBitmap,grayMat);
         //Imgproc.cvtColor(rgbaMat,grayMat,Imgproc.COLOR_RGB2GRAY);
         //Imgproc.cvtColor(grayMat, grayMat, Imgproc.COLOR_GRAY2RGBA, 4);
-        /*for(int i=0;i<rgbaMat.height();i++){
+        */
+/*for(int i=0;i<rgbaMat.height();i++){
             for(int j=0;j<rgbaMat.width();j++){
                 double y = 0.3 * rgbaMat.get(i, j)[0] + 0.59 * rgbaMat.get(i, j)[1] + 0.11 * rgbaMat.get(i, j)[2];
                 rgbaMat.put(i, j, new double[]{y, y, y, 255});
             }
         }
-*/
+*//*
+
 
         //Utils.matToBitmap(grayMat,testBitmap);
 
@@ -224,10 +233,12 @@ public class DetectFromImageActivity extends AppCompatActivity {
         //Bitmap preview = Bitmap.createBitmap(p, width, height, Bitmap.Config.ARGB_8888);
 
         float[] normalizedPixels = ConvertColor.convertForTensorflow(pixels);
-        /*float[] normalizedPixels = new float[height*width];
+        */
+/*float[] normalizedPixels = new float[height*width];
         for(int i=0;i<pixels.length;i++){
             normalizedPixels[i] = (float) pixels[i];
-        }*/
+        }*//*
+
         return normalizedPixels;
     }
 
@@ -251,4 +262,5 @@ public class DetectFromImageActivity extends AppCompatActivity {
             }
         });
     }
+*/
 }

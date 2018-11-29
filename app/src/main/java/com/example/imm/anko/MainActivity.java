@@ -19,11 +19,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -34,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     protected LinearLayout choosePhoto;
     private static final String TAG = "Ongko";
 
-    private IO io = new IO();
+    private ImageUtils io = new ImageUtils();
     ArrayList<String> mPhotoNames = new ArrayList<String>(50);
     private final int ACTIVITY_START_CAMERA_APP = 0;
     int mPhotoNum = 0;
@@ -119,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 if (data != null) {
                     //detectFromImage(data.getData());
-                    detectFromCapturedImage(data.getData());
+                    //detectFromCapturedImage(data.getData());
                 }
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 Toast.makeText(getApplicationContext(), "Cancelled", Toast.LENGTH_SHORT).show();
@@ -143,32 +139,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void detectFromCapturedImage(Uri uri) {
-        Bitmap bitmap = io.getCameraPhoto(getFileName(uri));
-        Bitmap origImage = io.getCameraPhoto(getFileName(uri));
-
-        //Preproces the image to remove noise, amplify the region of interest with the number
-        //by making it bright white and make the background completely black.
-        Mat imgToProcess = ip.preProcessImage(bitmap);
-
-        //Scale down the bitmap based on the processing height and width (640 x 480)
-        Bitmap.createScaledBitmap(bitmap,imgToProcess.width(),imgToProcess.height(),false);
-        Bitmap.createScaledBitmap(origImage,imgToProcess.width(),imgToProcess.height(),false);
-
-        //Convert to bitmap and save the photo to display in the app.
-        Utils.matToBitmap(imgToProcess.clone(),bitmap);
-        savePhoto(bitmap,"photo_preprocess.jpg");
-
-        //Pass the preprocessed image to perform segmentation and recogntion. This also
-        //overlays rectangular boxes on the segmented digits.
-        //Mat boundImage = ip.segmentAndRecognize(imgToProcess,origImage,mDetector);
-        Mat boundImage = ip.segmentAndRecognize(imgToProcess,origImage);
-        Utils.matToBitmap(boundImage.clone(),bitmap);
-        if(isStoragePermissionGranted()) {
-            savePhoto(bitmap, "photo_bound.jpg");
-        }
-    }
-
     public String getFileName(Uri uri) {
         String result = null;
         if (uri.getScheme().equals("content")) {
@@ -188,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
                 result = result.substring(cut + 1);
             }
         }
-        return result;
+        return uri.getPath();
     }
 
     public void savePhoto(Bitmap bm, String photoName) {

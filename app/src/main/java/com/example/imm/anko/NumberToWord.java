@@ -3,16 +3,18 @@ package com.example.imm.anko;
 import java.util.HashMap;
 
 public class NumberToWord {
-    HashMap<Integer, String> map;
+    HashMap<Integer, String> digitToWordMap;
+
     public NumberToWord() {
-        map = new HashMap<Integer, String>();
+        digitToWordMap = new HashMap<Integer, String>();
         fillMap();
     }
+
     public String numberToWords(int num) {
         StringBuilder sb = new StringBuilder();
 
         if(num==0){
-            return map.get(0);
+            return digitToWordMap.get(0);
         }
 
         if(num >= 1000000000){
@@ -46,20 +48,20 @@ public class NumberToWord {
 
         if(num>=100){
             int numHundred = num/100;
-            sb.append(" " +map.get(numHundred)+ " Hundred");
+            sb.append(" " +digitToWordMap.get(numHundred)+ " Hundred");
             num=num%100;
         }
 
         if(num > 0){
             if(num>0 && num<=20){
-                sb.append(" "+map.get(num));
+                sb.append(" "+digitToWordMap.get(num));
             }else{
                 int numTen = num/10;
-                sb.append(" "+map.get(numTen*10));
+                sb.append(" "+digitToWordMap.get(numTen*10));
 
                 int numOne=num%10;
                 if(numOne>0){
-                    sb.append(" " + map.get(numOne));
+                    sb.append(" " + digitToWordMap.get(numOne));
                 }
             }
         }
@@ -68,33 +70,33 @@ public class NumberToWord {
     }
 
     public void fillMap(){
-        map.put(0, "Zero");
-        map.put(1, "One");
-        map.put(2, "Two");
-        map.put(3, "Three");
-        map.put(4, "Four");
-        map.put(5, "Five");
-        map.put(6, "Six");
-        map.put(7, "Seven");
-        map.put(8, "Eight");
-        map.put(9, "Nine");
-        map.put(10, "Ten");
-        map.put(11, "Eleven");
-        map.put(12, "Twelve");
-        map.put(13, "Thirteen");
-        map.put(14, "Fourteen");
-        map.put(15, "Fifteen");
-        map.put(16, "Sixteen");
-        map.put(17, "Seventeen");
-        map.put(18, "Eighteen");
-        map.put(19, "Nineteen");
-        map.put(20, "Twenty");
-        map.put(30, "Thirty");
-        map.put(40, "Forty");
-        map.put(50, "Fifty");
-        map.put(60, "Sixty");
-        map.put(70, "Seventy");
-        map.put(80, "Eighty");
-        map.put(90, "Ninety");
+        digitToWordMap.put(0, "Zero");
+        digitToWordMap.put(1, "One");
+        digitToWordMap.put(2, "Two");
+        digitToWordMap.put(3, "Three");
+        digitToWordMap.put(4, "Four");
+        digitToWordMap.put(5, "Five");
+        digitToWordMap.put(6, "Six");
+        digitToWordMap.put(7, "Seven");
+        digitToWordMap.put(8, "Eight");
+        digitToWordMap.put(9, "Nine");
+        digitToWordMap.put(10, "Ten");
+        digitToWordMap.put(11, "Eleven");
+        digitToWordMap.put(12, "Twelve");
+        digitToWordMap.put(13, "Thirteen");
+        digitToWordMap.put(14, "Fourteen");
+        digitToWordMap.put(15, "Fifteen");
+        digitToWordMap.put(16, "Sixteen");
+        digitToWordMap.put(17, "Seventeen");
+        digitToWordMap.put(18, "Eighteen");
+        digitToWordMap.put(19, "Nineteen");
+        digitToWordMap.put(20, "Twenty");
+        digitToWordMap.put(30, "Thirty");
+        digitToWordMap.put(40, "Forty");
+        digitToWordMap.put(50, "Fifty");
+        digitToWordMap.put(60, "Sixty");
+        digitToWordMap.put(70, "Seventy");
+        digitToWordMap.put(80, "Eighty");
+        digitToWordMap.put(90, "Ninety");
     }
 }
