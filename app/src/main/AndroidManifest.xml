@@ -18,12 +18,21 @@
         android:name=".MyApplication"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
-
         </activity>
-        <activity android:name=".DrawDigitActivity" />
+        <activity android:name=".DrawDigitActivity"
+            android:label="Draw Digit"
+            android:parentActivityName=".HomeActivity"
+            />
         <activity
             android:name=".DetectFromImageActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:label="Number From Photo"
+            android:parentActivityName=".HomeActivity"
+            />
+
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value=".HomeActivity" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"

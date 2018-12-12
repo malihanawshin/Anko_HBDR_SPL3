@@ -8,6 +8,7 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
@@ -33,6 +34,7 @@ public class DetectFromImageActivity extends AppCompatActivity {
 
     protected ImageView image;
     protected Bitmap bitmap;
+    protected TextView view_digit,view_word;
 /*
     private static final int width = 32;
     private static final int height = 32;
@@ -46,6 +48,7 @@ public class DetectFromImageActivity extends AppCompatActivity {
     private DigitClassifier digitClassifier;
 */
     private Uri uri;
+    private String digit,word;
     public ImageProcessor ip = new ImageProcessor();
 
     @Override
@@ -55,6 +58,8 @@ public class DetectFromImageActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         uri = intent.getParcelableExtra("URI");
+        digit = intent.getStringExtra("Digit");
+        word = intent.getStringExtra("Word");
         image = findViewById(R.id.imageOfDigit);
 
         try {
@@ -64,15 +69,15 @@ public class DetectFromImageActivity extends AppCompatActivity {
         }
 
         image.setImageBitmap(bitmap);
-
         //findViewById(R.id.recognizeButton).setOnClickListener(clickListener);
         //findViewById(R.id.resetButton).setOnClickListener(clickListener);
 
         findViewById(R.id.recognizeButton).setVisibility(View.INVISIBLE);
         findViewById(R.id.resetButton).setVisibility(View.INVISIBLE);
+        view_digit = findViewById(R.id.result_num);
+        view_word = findViewById(R.id.result_word);
 
-
-
+        show(digit,word);
 /*
         if(OpenCVLoader.initDebug()){
             Toast.makeText(getApplicationContext(), "Loaded", Toast.LENGTH_SHORT).show();
@@ -101,6 +106,11 @@ public class DetectFromImageActivity extends AppCompatActivity {
         }
     };
 
+
+    public void show(String digit,String word){
+        view_digit.setText(digit);
+        view_word.setText(word);
+    }
 
 /*
     private void onRecognize() {

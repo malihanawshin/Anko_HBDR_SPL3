@@ -1,10 +1,15 @@
 package com.example.imm.anko;
 
+import android.app.ActionBar;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
@@ -19,6 +24,7 @@ public class DrawDigitActivity extends AppCompatActivity {
 
     protected DrawView drawview;
     protected ImageView canvas;
+    protected TextView text;
 
     private static final int width = 32;
     private static final int height = 32;
@@ -35,22 +41,30 @@ public class DrawDigitActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_draw_in_canvas);
 
+        //ActionBar actionBar = getActionBar();
+        //actionBar.setDisplayHomeAsUpEnabled(true);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         drawview = findViewById(R.id.drawView);
         canvas = findViewById(R.id.canvasImageview);
+        text = findViewById(R.id.result);
 
         findViewById(R.id.recognizeButton).setOnClickListener(clickListener);
         findViewById(R.id.resetButton).setOnClickListener(clickListener);
 
         load();
         if(OpenCVLoader.initDebug()){
-            Toast.makeText(getApplicationContext(), "Loaded", Toast.LENGTH_SHORT).show();
+            Log.e("OpenCv", "Loaded!");
         }
         else {
-            Toast.makeText(getApplicationContext(), "Cancelled", Toast.LENGTH_SHORT).show();
+            Log.e("OpenCv", "Could not load!");
         }
+
     }
 
     protected View.OnClickListener clickListener = new View.OnClickListener() {
@@ -99,8 +113,9 @@ public class DrawDigitActivity extends AppCompatActivity {
         NumberToWord nw = new NumberToWord();
         int number = Integer.parseInt(dc.getLabel());
         String num = nw.numberToWords(number);
-        String result = String.format("Digit: %s, %s",dc.getLabel(),num);
-        Toast.makeText(this, result, Toast.LENGTH_LONG).show();
+        String result = String.format("%s",num);
+        //Toast.makeText(this, result, Toast.LENGTH_LONG).show();
+        text.setText(result);
     }
 
     private void changeVisibility() {
@@ -112,6 +127,7 @@ public class DrawDigitActivity extends AppCompatActivity {
     private void onReset() {
         drawview.reset();
         canvas.setVisibility(View.GONE);
+        text.setText("");
         drawview.setVisibility(View.VISIBLE);
     }
 

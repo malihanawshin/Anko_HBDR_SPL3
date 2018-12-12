@@ -50,6 +50,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private Executor executor = Executors.newSingleThreadExecutor();
     private DigitClassifier digitClassifier;
+    private DetectFromImageActivity df;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,9 +116,14 @@ public class HomeActivity extends AppCompatActivity {
                 String path = getPath(uri);
                 File file = new File(path);
                 detectFromCapturedImage(path);
-                detectFromImage(uri);
-                Toast.makeText(this, ip.getResultNum(), Toast.LENGTH_LONG).show();
-                Toast.makeText(this, ip.getResultText(), Toast.LENGTH_LONG).show();
+
+                String digit = ip.getResultNum();
+                String word = ip.getResultText();
+
+                detectFromImage(uri,digit,word);
+
+                //Toast.makeText(this, ip.getResultNum(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, ip.getResultText(), Toast.LENGTH_LONG).show();
                 if (file.exists()) {
                     Log.e("HomeActivity", "Yeah gotcha!");
                 }
@@ -141,9 +147,11 @@ public class HomeActivity extends AppCompatActivity {
     }
 
 
-    private void detectFromImage(Uri uri) {
+    private void detectFromImage(Uri uri,String digit,String word) {
         Intent intent = new Intent(HomeActivity.this, DetectFromImageActivity.class);
         intent.putExtra("URI", uri);
+        intent.putExtra("Digit",digit);
+        intent.putExtra("Word",word);
         startActivity(intent);
     }
 
