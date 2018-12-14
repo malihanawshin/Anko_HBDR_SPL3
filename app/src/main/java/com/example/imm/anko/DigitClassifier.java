@@ -71,7 +71,6 @@ public class DigitClassifier {
             if (output[i] > threshold && output[i] > digit.getConfidence()) {
                 digit.update(labels.get(i),output[i]);
             }
-            //else
         }
 
         return digit;

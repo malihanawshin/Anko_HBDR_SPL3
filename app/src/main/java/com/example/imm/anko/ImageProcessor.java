@@ -22,14 +22,14 @@ public class ImageProcessor {
     public String resultText;
     public String resultNum;
 
-    private static final String TAG = "ImageProcessor";
+    private static final String TAG = "Processed Image";
     ArrayList<RectObject> rectImages = new ArrayList<RectObject>(50);
     public NumberToWord numConverter = new NumberToWord();
     private ImageUtils io = new ImageUtils();
 
     public Mat preProcessImage(Bitmap image) {
         Size sz = new Size(320, 240);
-        ArrayList<Rect> rects;
+        ArrayList<Rect> rectList;
         Rect rect;
         int top,bottom,left,right;
 
@@ -53,17 +53,17 @@ public class ImageProcessor {
         Core.subtract(imgGrayInv,imgToProcess,imgGrayInv);
         Imgproc.Canny(imgToProcess,imgToProcessCanny,13,39,3,false);
 
-        rects = this.boundingBox(imgToProcessCanny);
-        Log.d(TAG,"Length of rects : " + rects.size());
+        rectList = this.boundingBox(imgToProcessCanny);
+        Log.d(TAG,"Rectangular objects: " + rectList.size());
 
-        if (rects.size() != 0) {
-            rect = rects.get(0);
+        if (rectList.size() != 0) {
+            rect = rectList.get(0);
             top = rect.y;
             bottom = rect.y + rect.height;
             left = rect.x;
             right = rect.x + rect.height;
-            for (int i = 1; i < rects.size(); i++) {
-                rect = rects.get(i);
+            for (int i = 1; i < rectList.size(); i++) {
+                rect = rectList.get(i);
                 if (rect.y < top) {
                     top = rect.y;
                 }
@@ -97,7 +97,7 @@ public class ImageProcessor {
 
     public ArrayList<Rect> boundingBox(Mat imgToProcess) {
         ArrayList<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-        ArrayList<Rect> rects = new ArrayList<>(50);
+        ArrayList<Rect> rectList = new ArrayList<>(50);
         Mat hierarchy = new Mat();
 
         Imgproc.findContours(imgToProcess, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
@@ -108,23 +108,18 @@ public class ImageProcessor {
 
             MatOfPoint2f approxCurve = new MatOfPoint2f();
             MatOfPoint2f contour2f = new MatOfPoint2f(contours.get(contourIdx).toArray());
-            // processing on mMOP2f1 which is in type MatOfPoint2f
+
             double approxDistance = Imgproc.arcLength(contour2f, true) * 0.02;
             Imgproc.approxPolyDP(contour2f, approxCurve, approxDistance, true);
-
-            // convert back to MatOfPoint
             MatOfPoint points = new MatOfPoint(approxCurve.toArray());
-
-            // get bounding rect of contour
             Rect rect = Imgproc.boundingRect(points);
 
             if (rect.height > 5) {
-                rects.add(rect);
+                rectList.add(rect);
             }
-
         }
-        rectangles(rects);
-        return rects;
+        rectangles(rectList);
+        return rectList;
     }
 
 
@@ -144,23 +139,18 @@ public class ImageProcessor {
 
             double contourArea = Imgproc.contourArea(contours.get(contourIdx));
 
-            // using this to filter out very small spots
             if (contourArea < 500.0) {
                 continue;
             }
-            Log.d(TAG,"Contour Area = " + contourArea);
 
             MatOfPoint2f approxCurve = new MatOfPoint2f();
             MatOfPoint2f contour2f = new MatOfPoint2f(contours.get(contourIdx).toArray());
 
-            // processing on mMOP2f1 which is in type MatOfPoint2f
             double approxDistance = Imgproc.arcLength(contour2f, true) * 0.02;
             Imgproc.approxPolyDP(contour2f, approxCurve, approxDistance, true);
 
-            // convert back to MatOfPoint
             MatOfPoint points = new MatOfPoint(approxCurve.toArray());
 
-            // get bounding rect of contour
             Rect rect = Imgproc.boundingRect(points);
             Imgproc.rectangle(origImageMatrix, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0, 255), 3);
             if ((rect.y + rect.height > origImageMatrix.rows()) || (rect.x + rect.width > origImageMatrix.cols())) {
@@ -202,13 +192,13 @@ public class ImageProcessor {
             DigitClassification dc = digitClassifier.recognize(pixelsInFloat);
             int digit = Integer.parseInt(dc.getLabel());
 
-            Log.i(TAG, "digit = " + digit);
+            Log.i(TAG, "digit: " + digit);
             ResultDigits.append("" + digit);
         }
 
         resultNum = ResultDigits.toString();
         int number = Integer.parseInt(resultNum);
-        Log.i(TAG,"Number = " + number);
+        Log.i(TAG,"number: " + number);
         
         resultText = numConverter.numberToWords(number);
         return origImageMatrix;
@@ -221,12 +211,11 @@ public class ImageProcessor {
     public String getResultNum() { return this.resultNum; }
 
     private int [] getPixelData(Bitmap tempImage) {
-        Log.d(TAG,"Image Size : " + tempImage.getWidth() + " , " + tempImage.getHeight());
         int [] pixels = new int[tempImage.getWidth() * tempImage.getHeight()];
         tempImage.getPixels(pixels, 0, tempImage.getWidth(), 0, 0, tempImage.getWidth(),tempImage.getHeight());
         int[] retPixels = new int[pixels.length];
         for (int i = 0; i < pixels.length; ++i) {
-            // set 0 for white and 255 for black pixel
+
             int pix = pixels[i];
             pix = pix & 0xff;
             int b = pix & 0xff;
@@ -234,6 +223,17 @@ public class ImageProcessor {
         }
         return retPixels;
 
+    }
+
+
+    public static float[] makeFloat(int[] pixels){
+
+        float[] floatArray = new float[pixels.length];
+        for(int i=0;i<pixels.length;i++){
+            floatArray[i] = (float) pixels[i];
+        }
+
+        return floatArray;
     }
 
     private ArrayList<Rect> rectangles(ArrayList<Rect> rects) {
@@ -245,8 +245,6 @@ public class ImageProcessor {
 
         mean = sum / rects.size();
 
-        Log.d(TAG, "Mean = " + mean);
-
         for (int i = 0; i < rects.size(); i++) {
             if (rects.get(i).height < (mean - 5.0)) {
                 rects.remove(i);
@@ -255,14 +253,6 @@ public class ImageProcessor {
         return rects;
     }
 
-    public static float[] makeFloat(int[] pixels){
 
-        float[] floatArray = new float[pixels.length];
-        for(int i=0;i<pixels.length;i++){
-             floatArray[i] = (float) pixels[i];
-        }
-
-        return floatArray;
-    }
 
 }

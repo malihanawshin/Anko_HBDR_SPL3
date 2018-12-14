@@ -16,15 +16,14 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import static com.example.imm.anko.ImageUtils.getResizedBitmap;
+
 
 public class DrawDigitActivity extends AppCompatActivity {
-
-    protected DrawView drawview;
-    protected ImageView canvas;
-    protected TextView text;
 
     private static final int width = 32;
     private static final int height = 32;
@@ -37,16 +36,22 @@ public class DrawDigitActivity extends AppCompatActivity {
     private Executor executor = Executors.newSingleThreadExecutor();
     private DigitClassifier digitClassifier;
     private ImageProcessor ip = new ImageProcessor();
+    private ImageUtils io = new ImageUtils();
     Bitmap originalImage;
+    private int number;
+    ArrayList<Integer> numbers = new ArrayList<Integer>(50);
+    private String CURRENT_ACTION = null;
+
+    protected DrawView drawview;
+    protected ImageView canvas;
+    protected TextView text;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_draw_in_canvas);
-
-        //ActionBar actionBar = getActionBar();
-        //actionBar.setDisplayHomeAsUpEnabled(true);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -56,6 +61,8 @@ public class DrawDigitActivity extends AppCompatActivity {
 
         findViewById(R.id.recognizeButton).setOnClickListener(clickListener);
         findViewById(R.id.resetButton).setOnClickListener(clickListener);
+        //findViewById(R.id.mul).setOnClickListener(clickListener);
+        //findViewById(R.id.equal).setOnClickListener(clickListener);
 
         load();
         if(OpenCVLoader.initDebug()){
@@ -78,9 +85,29 @@ public class DrawDigitActivity extends AppCompatActivity {
                 case R.id.resetButton:
                      onReset();
                      break;
+                case R.id.mul:
+                     onReset();
+                     //calculate("*",number);
+                     CURRENT_ACTION = "*";
+                     break;
+                case R.id.equal:
+                     onRecognize();
+                     calculate(numbers);
+                     break;
             }
         }
     };
+
+    private void calculate(ArrayList<Integer> arr) {
+
+        int ans=1;
+
+        for(int i=0;i<arr.size();i++){
+            if(CURRENT_ACTION=="*") ans = arr.get(i) * arr.get(i+1);
+            arr.add(ans);
+        }
+        text.setText(ans);
+    }
 
 
     private void onRecognize() {
@@ -89,13 +116,17 @@ public class DrawDigitActivity extends AppCompatActivity {
 
         Bitmap scaledImage = Bitmap.createScaledBitmap(originalImage, 32, 32, false);
 
-        //Mat imgMat = ip.preProcessImage(scaledImage);
-        //Utils.matToBitmap(imgMat,scaledImage);
+        /*Bitmap originalImage = getResizedBitmap(originalImage,2500,2500);
+        Mat imgMat = ip.preProcessImage(bitmap);
+        Utils.matToBitmap(imgMat,bitmap);
+        savePhoto(bitmap, "photo_preprocess.jpg");
 
+        Mat boundImage = ip.segmentAndRecognize(imgMat,scaledImage,digitClassifier);
+        Utils.matToBitmap(boundImage.clone(), bitmap);
+        savePhoto(bitmap, "photo_bound.jpg");
+*/
         canvas.setImageBitmap(scaledImage);
         changeVisibility();
-
-        //Mat boundImage = ip.segmentAndRecognize(imgMat,scaledImage);
 
         int pixels[] = new int[height*width];
         scaledImage.getPixels(pixels,0,height, 0,0,width,height);
@@ -108,10 +139,15 @@ public class DrawDigitActivity extends AppCompatActivity {
         classify(normalizedPixels);
     }
 
+    public void savePhoto(Bitmap bm, String photoName) {
+        io.saveImage(bm, photoName);
+    }
+
     private void classify(float[] normalizedPixels) {
         DigitClassification dc = digitClassifier.recognize(normalizedPixels);
         NumberToWord nw = new NumberToWord();
-        int number = Integer.parseInt(dc.getLabel());
+        number = Integer.parseInt(dc.getLabel());
+        numbers.add(number);
         String num = nw.numberToWords(number);
         String result = String.format("%s",num);
         //Toast.makeText(this, result, Toast.LENGTH_LONG).show();
@@ -156,5 +192,8 @@ public class DrawDigitActivity extends AppCompatActivity {
         return previewPixels;
     }
 
+    public void multiplication(){
+
+    }
 
 }

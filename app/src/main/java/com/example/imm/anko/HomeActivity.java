@@ -35,9 +35,6 @@ public class HomeActivity extends AppCompatActivity {
 
     private ImageUtils io = new ImageUtils();
     ArrayList<String> mPhotoNames = new ArrayList<String>(50);
-    private final int ACTIVITY_START_CAMERA_APP = 0;
-    int mPhotoNum = 0;
-    private String mImageFileLocation;
     private ImageProcessor ip = new ImageProcessor();
 
     private static final int width = 32;
@@ -98,7 +95,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void createChooser() {
-        // image gallery or camera, doesn't matter
+        // image gallery or camera
         CropImage.activity().setGuidelines(CropImageView.Guidelines.ON).start(this);
     }
 
@@ -159,15 +156,14 @@ public class HomeActivity extends AppCompatActivity {
         Bitmap bitmap = io.getCameraPhoto(path);
         Bitmap origImage = io.getCameraPhoto(path);
 
-        //Preproces the image to remove noise, amplify the region of interest with the number
-        //by making it bright white and make the background completely black.
+        //pre process image to remove noise and amplify region of interest with the number
+        // by making it bright white and make the background completely black
         Mat imgToProcess = ip.preProcessImage(bitmap);
 
-        //Scale down the bitmap based on the processing height and width (640 x 480)
+        //scale down the bitmap based on the processing height and width
         Bitmap.createScaledBitmap(bitmap, imgToProcess.width(), imgToProcess.height(), false);
         Bitmap.createScaledBitmap(origImage, imgToProcess.width(), imgToProcess.height(), false);
 
-        //Convert to bitmap and save the photo to display in the app.
         Utils.matToBitmap(imgToProcess.clone(), bitmap);
         savePhoto(bitmap, "photo_preprocess.jpg");
 
@@ -237,7 +233,7 @@ public class HomeActivity extends AppCompatActivity {
                 digitClassifier = DigitClassifier.create(getApplicationContext().getAssets(),
                         model_path, label_path, input_size, input_name, output_name);
             } catch (final Exception e) {
-                throw new RuntimeException("Error while initializing TensorFlow!", e);
+                throw new RuntimeException("Error initializing TensorFlow!", e);
             }
         });
     }

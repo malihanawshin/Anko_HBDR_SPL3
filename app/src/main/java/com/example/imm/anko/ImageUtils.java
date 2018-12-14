@@ -21,15 +21,13 @@ public class ImageUtils {
         File file = new File(extStorageDirectory, imageName);
 
         if (true) {
-
             try {
                 outStream = new FileOutputStream(file);
                 bm.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
                 outStream.flush();
                 outStream.close();
-                Log.d(TAG, "Adding Image : " + imageName);
             } catch (FileNotFoundException e) {
-                Log.d(TAG, "File not found : " + file.getAbsolutePath());
+                Log.d(TAG, "File not found " + file.getAbsolutePath());
             } catch (IOException e) {
                 Log.d(TAG, "Exception");
                 e.printStackTrace();
@@ -39,7 +37,6 @@ public class ImageUtils {
 
     public File createImageFile(String imageFilename)  {
         File storageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        Log.d(TAG,"Storage Directory : " + storageDirectory.toString());
         File image = new File(storageDirectory, imageFilename);
         return image;
     }
@@ -92,6 +89,41 @@ public class ImageUtils {
         }
 
     }
+
+
+    public Bitmap getCanvasPhoto(String file) {
+
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(file, bounds);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        Bitmap bm = BitmapFactory.decodeFile(file, options);
+        bm = getResizedBitmap(bm,2500,2500);
+        bounds.outHeight = 2500;
+        bounds.outWidth = 2500;
+
+        try {
+            ExifInterface exif = new ExifInterface(file);
+
+            String orientString = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+            int orientation = orientString != null ? Integer.parseInt(orientString) : ExifInterface.ORIENTATION_NORMAL;
+
+            int rotationAngle = 0;
+            if (orientation == ExifInterface.ORIENTATION_ROTATE_90) rotationAngle = 90;
+            if (orientation == ExifInterface.ORIENTATION_ROTATE_180) rotationAngle = 180;
+            if (orientation == ExifInterface.ORIENTATION_ROTATE_270) rotationAngle = 270;
+
+            Matrix matrix = new Matrix();
+            matrix.setRotate(rotationAngle, (float) bm.getWidth() / 2, (float) bm.getHeight() / 2);
+            Bitmap rotatedBitmap = Bitmap.createBitmap(bm, 0, 0, bounds.outWidth, bounds.outHeight, matrix, true);
+            return rotatedBitmap;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
 
     private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         int initialInSampleSize = computeInitialSampleSize(options, reqWidth, reqHeight);
