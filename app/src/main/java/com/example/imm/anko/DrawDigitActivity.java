@@ -2,8 +2,12 @@ package com.example.imm.anko;
 
 import android.app.ActionBar;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -16,6 +20,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -46,6 +51,8 @@ public class DrawDigitActivity extends AppCompatActivity {
     protected ImageView canvas;
     protected TextView text;
 
+    boolean gotFirstNumber =  false;
+    long calculation = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,8 +68,11 @@ public class DrawDigitActivity extends AppCompatActivity {
 
         findViewById(R.id.recognizeButton).setOnClickListener(clickListener);
         findViewById(R.id.resetButton).setOnClickListener(clickListener);
-        //findViewById(R.id.mul).setOnClickListener(clickListener);
-        //findViewById(R.id.equal).setOnClickListener(clickListener);
+        findViewById(R.id.plus).setOnClickListener(clickListener);
+        findViewById(R.id.minus).setOnClickListener(clickListener);
+        findViewById(R.id.mul).setOnClickListener(clickListener);
+        findViewById(R.id.div).setOnClickListener(clickListener);
+        findViewById(R.id.equal).setOnClickListener(clickListener);
 
         load();
         if(OpenCVLoader.initDebug()){
@@ -80,51 +90,52 @@ public class DrawDigitActivity extends AppCompatActivity {
 
             switch (v.getId()) {
                 case R.id.recognizeButton:
-                     onRecognize();
+                     //onRecognize();
+                     onRecognizeOk();
                      break;
                 case R.id.resetButton:
                      onReset();
                      break;
-                case R.id.mul:
+                case R.id.plus:
                      onReset();
-                     //calculate("*",number);
-                     CURRENT_ACTION = "*";
+                     CURRENT_ACTION = "+";
                      break;
-                case R.id.equal:
+                case R.id.minus:
+                    onReset();
+                    CURRENT_ACTION = "-";
+                    break;
+                case R.id.mul:
+                    onReset();
+                    CURRENT_ACTION = "*";
+                    break;
+                case R.id.div:
+                    onReset();
+                    CURRENT_ACTION = "/";
+                    break;
+                /*case R.id.equal:
                      onRecognize();
-                     calculate(numbers);
-                     break;
+                     calculate(number);
+                     break;*/
             }
         }
     };
 
-    private void calculate(ArrayList<Integer> arr) {
+    private void calculate(int number) {
 
-        int ans=1;
+        if (CURRENT_ACTION == "+") calculation = calculation + number;
+        if (CURRENT_ACTION == "-") calculation = calculation - number;
+        if (CURRENT_ACTION == "*") calculation = calculation * number;
+        if (CURRENT_ACTION == "/" && number!=0) calculation = calculation / number;
 
-        for(int i=0;i<arr.size();i++){
-            if(CURRENT_ACTION=="*") ans = arr.get(i) * arr.get(i+1);
-            arr.add(ans);
-        }
-        text.setText(ans);
+        text.setText(Long.toString(calculation));
+        CURRENT_ACTION = null;
     }
 
-
-    private void onRecognize() {
+    private void onRecognizeOk() {
 
         originalImage = drawview.getBitmap();
 
         Bitmap scaledImage = Bitmap.createScaledBitmap(originalImage, 32, 32, false);
-
-        /*Bitmap originalImage = getResizedBitmap(originalImage,2500,2500);
-        Mat imgMat = ip.preProcessImage(bitmap);
-        Utils.matToBitmap(imgMat,bitmap);
-        savePhoto(bitmap, "photo_preprocess.jpg");
-
-        Mat boundImage = ip.segmentAndRecognize(imgMat,scaledImage,digitClassifier);
-        Utils.matToBitmap(boundImage.clone(), bitmap);
-        savePhoto(bitmap, "photo_bound.jpg");
-*/
         canvas.setImageBitmap(scaledImage);
         changeVisibility();
 
@@ -139,19 +150,69 @@ public class DrawDigitActivity extends AppCompatActivity {
         classify(normalizedPixels);
     }
 
-    public void savePhoto(Bitmap bm, String photoName) {
-        io.saveImage(bm, photoName);
+    private void onRecognize() {
+
+        originalImage = drawview.getBitmap();
+
+        String path = io.savePicture(this,originalImage);
+        detectFromCanvasImage(path);
+
+        String digit = ip.getResultNum();
+        String word = ip.getResultText();
+
+        Bitmap scaledImage = Bitmap.createScaledBitmap(originalImage, 32, 32, false);
+        canvas.setImageBitmap(scaledImage);
+        changeVisibility();
+
+        int pixels[] = new int[height*width];
+        scaledImage.getPixels(pixels,0,height, 0,0,width,height);
+        float[] normalizedPixels = normalizePixels(pixels);
+        int[] previewPixels = pixelsForPreview(pixels, normalizedPixels);
+
+        Bitmap preview = Bitmap.createBitmap(previewPixels, width, height, Bitmap.Config.ARGB_8888);
+        canvas.setImageBitmap(preview);
+        text.setText(word);
+    }
+
+    private void detectFromCanvasImage(String path) {
+
+        Bitmap bitmap = io.getCameraPhoto(path);
+        Bitmap origImage = io.getCameraPhoto(path);
+        Mat mat = new Mat();
+
+        Mat imgToProcess = ip.preProcessImage(bitmap);
+
+        Bitmap.createScaledBitmap(bitmap, imgToProcess.width(), imgToProcess.height(), false);
+        Bitmap.createScaledBitmap(origImage, imgToProcess.width(), imgToProcess.height(), false);
+
+        Utils.matToBitmap(imgToProcess.clone(), bitmap);
+        savePhoto(bitmap, "photo_preprocessed.jpg");
+        Mat boundImage = ip.segmentAndRecognize(imgToProcess, origImage, digitClassifier);
+
+        Utils.matToBitmap(boundImage.clone(), bitmap);
+        savePhoto(bitmap, "photo_bound.jpg");
+    }
+
+
+    public File savePhoto(Bitmap bm, String photoName) {
+        File photo = io.saveImage(bm, photoName);
+        return photo;
     }
 
     private void classify(float[] normalizedPixels) {
         DigitClassification dc = digitClassifier.recognize(normalizedPixels);
         NumberToWord nw = new NumberToWord();
         number = Integer.parseInt(dc.getLabel());
-        numbers.add(number);
+        //numbers.add(number);
         String num = nw.numberToWords(number);
         String result = String.format("%s",num);
-        //Toast.makeText(this, result, Toast.LENGTH_LONG).show();
         text.setText(result);
+
+        if(gotFirstNumber==false) gotFirstNumber=true;
+
+        if (gotFirstNumber && CURRENT_ACTION != null) {
+            calculate(number);
+        }
     }
 
     private void changeVisibility() {
@@ -190,10 +251,6 @@ public class DrawDigitActivity extends AppCompatActivity {
             previewPixels[i] = ConvertColor.convertTfToPixel(normalizedPixels[i]);
         }
         return previewPixels;
-    }
-
-    public void multiplication(){
-
     }
 
 }

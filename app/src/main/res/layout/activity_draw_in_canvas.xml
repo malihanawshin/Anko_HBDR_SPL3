@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#8bc34a"
+    android:background="#74a33f"
     tools:context=".DrawDigitActivity">
 
     <FrameLayout
@@ -42,7 +42,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginBottom="8dp"
-        android:visibility="gone"
+
         >
 
 
@@ -72,7 +72,9 @@
             android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@+id/separator"
             android:layout_weight="1"
-            android:text="=" />
+            android:text="="
+            android:visibility="gone"
+            />
 
 
         <Button

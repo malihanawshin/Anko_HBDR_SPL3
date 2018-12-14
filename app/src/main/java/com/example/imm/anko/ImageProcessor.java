@@ -190,17 +190,26 @@ public class ImageProcessor {
 
             float[] pixelsInFloat = makeFloat(pixels);
             DigitClassification dc = digitClassifier.recognize(pixelsInFloat);
-            int digit = Integer.parseInt(dc.getLabel());
-
-            Log.i(TAG, "digit: " + digit);
-            ResultDigits.append("" + digit);
+            //if(dc!=null) {
+                int digit = Integer.parseInt(dc.getLabel());
+                Log.i(TAG, "digit: " + digit);
+                ResultDigits.append("" + digit);
+            //}
+            //else {
+              //  resultNum = "";
+                //resultText = "Failed to recognize as a number. Try another image!";
+            //}
         }
-
         resultNum = ResultDigits.toString();
-        int number = Integer.parseInt(resultNum);
-        Log.i(TAG,"number: " + number);
-        
-        resultText = numConverter.numberToWords(number);
+        if(resultNum==""){
+            resultNum = "Failed to recognize as a number.";
+            resultText = "Try another image!";
+        }
+        else {
+            int number = Integer.parseInt(resultNum);
+            Log.i(TAG, "number: " + number);
+            resultText = numConverter.numberToWords(number);
+        }
         return origImageMatrix;
     }
 

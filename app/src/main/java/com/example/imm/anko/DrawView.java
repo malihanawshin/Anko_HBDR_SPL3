@@ -6,9 +6,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PorterDuff;
 import android.view.View;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+
+import static android.graphics.Color.WHITE;
 
 
 public class DrawView extends View {
@@ -25,12 +28,14 @@ public class DrawView extends View {
     public DrawView(Context context, AttributeSet set) {
         super(context,set);
         bitmapOfPaint = new Paint(Paint.DITHER_FLAG);
+        //bitmapOfPaint.setColor(WHITE);
         path = new Path();
+        //canvas = new Canvas();
+        //canvas.drawColor(Color.WHITE, PorterDuff.Mode.CLEAR);
     }
 
     private void setup() {
         int width = getMeasuredWidth();
-
         Paint paint = new Paint();
         paint.setAntiAlias(true);
         paint.setDither(true);
@@ -39,16 +44,20 @@ public class DrawView extends View {
         paint.setStrokeCap(Paint.Cap.SQUARE);
         paint.setStrokeJoin(Paint.Join.BEVEL);
         paint.setStrokeWidth(width/32);
-
         this.paint = paint;
     }
-
-
     @Override
     protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
         super.onSizeChanged(width, height, oldWidth, oldHeight);
         bitmap = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
+
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint();
+        paint.setColor(Color.parseColor("#FFFFFF"));
+        canvas.drawRect(0F, 0F, (float) width, (float) height, paint);
+
+        canvas.drawPaint(paint);
     }
 
     @Override
@@ -60,7 +69,8 @@ public class DrawView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
+        //Paint background = new Paint();
+        //background.setColor(WHITE);
         canvas.drawBitmap(bitmap, 0, 0, bitmapOfPaint);
         canvas.drawPath(path, paint);
     }

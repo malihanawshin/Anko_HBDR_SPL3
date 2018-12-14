@@ -1,39 +1,90 @@
 package com.example.imm.anko;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class ImageUtils {
 
     private static final String TAG = "ImageUtils";
 
-    public void saveImage(Bitmap bm, String imageName) {
+    public File saveImage(Bitmap bm, String imageName) {
         FileOutputStream outStream;
         String extStorageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
-        File file = new File(extStorageDirectory, imageName);
+        File imageFile = new File(extStorageDirectory, imageName);
 
         if (true) {
             try {
-                outStream = new FileOutputStream(file);
+                outStream = new FileOutputStream(imageFile);
                 bm.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
                 outStream.flush();
                 outStream.close();
             } catch (FileNotFoundException e) {
-                Log.d(TAG, "File not found " + file.getAbsolutePath());
+                Log.d(TAG, "File not found" + imageFile.getAbsolutePath());
             } catch (IOException e) {
                 Log.d(TAG, "Exception");
                 e.printStackTrace();
             }
         }
+
+        return imageFile;
     }
+
+    public static String savePicture(Context context, Bitmap bitmap) {
+        File mediaStorageDir = new File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                context.getString(R.string.app_name).replaceAll("\\s+","")
+        );
+
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                return null;
+            }
+        }
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        File mediaFile = new File(
+                mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg"
+        );
+
+        // Saving the bitmap
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out);
+
+            FileOutputStream stream = new FileOutputStream(mediaFile);
+            stream.write(out.toByteArray());
+            stream.close();
+
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+
+        // MediaScanner needs to scan for the image saved
+        Intent mediaScannerIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri fileContentUri = Uri.fromFile(mediaFile);
+        mediaScannerIntent.setData(fileContentUri);
+        context.sendBroadcast(mediaScannerIntent);
+
+        //return fileContentUri;
+        return mediaFile.getPath();
+    }
+
 
     public File createImageFile(String imageFilename)  {
         File storageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
