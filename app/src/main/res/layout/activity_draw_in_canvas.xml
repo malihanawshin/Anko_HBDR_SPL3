@@ -45,6 +45,15 @@
 
         >
 
+        <Button
+            android:id="@+id/recognizeButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/separator"
+            android:layout_weight="1"
+            android:text="Recognize Single Digit" />
+
 
         <Button
             android:id="@+id/plus"
@@ -53,7 +62,9 @@
             android:layout_alignParentRight="true"
             android:layout_toRightOf="@+id/separator"
             android:layout_weight="1"
-            android:text="+" />
+            android:text="+"
+            android:visibility="gone"
+            />
 
 
         <Button
@@ -63,7 +74,8 @@
             android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@+id/separator"
             android:layout_weight="1"
-            android:text="-" />
+            android:text="-"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/equal"
@@ -85,6 +97,7 @@
             android:layout_toRightOf="@+id/separator"
             android:layout_weight="1"
             android:text="*"
+            android:visibility="gone"
             />
 
 
@@ -95,7 +108,8 @@
             android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@+id/separator"
             android:layout_weight="1"
-            android:text="/" />
+            android:text="/"
+            android:visibility="gone"/>
 
 
     </LinearLayout>
@@ -122,13 +136,13 @@
 
 
         <Button
-            android:id="@+id/recognizeButton"
+            android:id="@+id/recognizeNum"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_toRightOf="@+id/separator"
             android:layout_weight="1"
-            android:text="Recognize" />
+            android:text="Recognize Number" />
 
 
         <Button

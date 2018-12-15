@@ -67,6 +67,7 @@ public class DrawDigitActivity extends AppCompatActivity {
         text = findViewById(R.id.result);
 
         findViewById(R.id.recognizeButton).setOnClickListener(clickListener);
+        findViewById(R.id.recognizeNum).setOnClickListener(clickListener);
         findViewById(R.id.resetButton).setOnClickListener(clickListener);
         findViewById(R.id.plus).setOnClickListener(clickListener);
         findViewById(R.id.minus).setOnClickListener(clickListener);
@@ -90,8 +91,10 @@ public class DrawDigitActivity extends AppCompatActivity {
 
             switch (v.getId()) {
                 case R.id.recognizeButton:
-                     //onRecognize();
                      onRecognizeOk();
+                     break;
+                case R.id.recognizeNum:
+                     onRecognize();
                      break;
                 case R.id.resetButton:
                      onReset();

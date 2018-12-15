@@ -202,7 +202,7 @@ public class ImageProcessor {
         }
         resultNum = ResultDigits.toString();
         if(resultNum==""){
-            resultNum = "Failed to recognize as a number.";
+            resultNum = "Failed to recognize as a number";
             resultText = "Try another image!";
         }
         else {
